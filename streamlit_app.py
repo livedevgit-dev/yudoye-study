@@ -116,14 +116,28 @@ def load_word_templates() -> list[dict]:
 
 
 # ─── 난수·문제 생성 ──────────────────────────────────────────────────────────
-def rand_by_max_digits(max_digits: int) -> int:
+MIN_OPERAND = 2  # 곱셈·나눗셈: 피연산자·몫에 1 금지
+MIN_ADD_SUB_DIGITS = 2  # 덧셈·뺄셈: 1자리 수 없음 (항상 10 이상)
+
+
+def rand_mul_div_operand(max_digits: int) -> int:
     """
-    1 ~ max_digits 자리 중 하나를 무작위로 골라 그 범위의 양의 정수를 반환.
-    예) 최대 2자리 → 1~9 또는 10~99 중에서 나옴 (자릿수 혼합 출제).
+    곱셈·나눗셈용 피연산자.
+    1자리일 때 2~9, 2자리 이상은 해당 자릿수 범위 (값은 항상 2 이상).
     """
     digits = random.randint(1, max_digits)
     if digits == 1:
-        return random.randint(1, 9)
+        return random.randint(MIN_OPERAND, 9)
+    return random.randint(10 ** (digits - 1), 10**digits - 1)
+
+
+def rand_add_sub_operand(max_digits: int) -> int:
+    """
+    덧셈·뺄셈용 피연산자.
+    최소 2자리(10~)만 사용하며, 설정 자릿수가 1이어도 2자리로 올립니다.
+    """
+    high_digits = max(max_digits, MIN_ADD_SUB_DIGITS)
+    digits = random.randint(MIN_ADD_SUB_DIGITS, high_digits)
     return random.randint(10 ** (digits - 1), 10**digits - 1)
 
 
@@ -134,34 +148,48 @@ def _digit_count(n: int) -> int:
 def _rand_division_operands(max_digits: int) -> tuple[int, int, int]:
     """
     나눗셈용 a ÷ b = answer 생성.
-    피제수(a), 제수(b), 몫(answer) 모두 max_digits 자리 이하가 되도록 제한합니다.
-  (기존 b×answer 방식은 곱이 커져 4자리 피제수가 나올 수 있었음)
+    피제수(a), 제수(b)는 max_digits 자리 이하.
+    제수·몫이 1이면 ÷1, 71÷71=1 같은 지나치게 쉬운 문제가 되므로 2 이상을 우선합니다.
     """
     cap = 10**max_digits - 1
+    min_quotient = MIN_OPERAND
     for _ in range(200):
-        b = rand_by_max_digits(max_digits)
-        max_answer = cap // b
-        if max_answer < 1:
+        b = rand_mul_div_operand(max_digits)
+        if b < MIN_OPERAND:
             continue
-        answer = random.randint(1, max_answer)
+        max_answer = cap // b
+        if max_answer < min_quotient:
+            continue
+        answer = random.randint(min_quotient, max_answer)
         a = b * answer
         if _digit_count(a) <= max_digits and _digit_count(b) <= max_digits:
             return a, b, answer
-    b = random.randint(2, min(9, cap))
-    answer = random.randint(1, max(1, cap // b))
+    b = random.randint(MIN_OPERAND, min(9, cap))
+    hi = max(MIN_OPERAND, cap // b)
+    answer = random.randint(MIN_OPERAND, hi)
     return b * answer, b, answer
 
 
 def generate_arithmetic(op_key: str, symbol: str, max_digits: int) -> dict:
     """단순 연산 문제 1개 생성 (피연산자 + 정답)."""
-    a = rand_by_max_digits(max_digits)
-    b = rand_by_max_digits(max_digits)
+    if op_key in ("add", "sub"):
+        rand_operand = rand_add_sub_operand
+    else:
+        rand_operand = rand_mul_div_operand
+
+    a = rand_operand(max_digits)
+    b = rand_operand(max_digits)
 
     if op_key == "add":
         answer = a + b
     elif op_key == "sub":
-        if b > a:
-            a, b = b, a  # 음수 방지: 큰 수 - 작은 수
+        for _ in range(50):
+            a = rand_add_sub_operand(max_digits)
+            b = rand_add_sub_operand(max_digits)
+            if a > b:
+                break
+        else:
+            a, b = max(a, b) + 1, min(a, b)
         answer = a - b
     elif op_key == "mul":
         answer = a * b
@@ -210,13 +238,22 @@ def generate_word(op_key: str, symbol: str, json_op: str, max_digits: int) -> di
 
 def _operands_for_word(op_key: str, max_digits: int) -> tuple[int, int, int]:
     """서술식용 a, b, 정답 생성 (나눗셈은 나누어떨어지게)."""
-    a = rand_by_max_digits(max_digits)
-    b = rand_by_max_digits(max_digits)
+    if op_key in ("add", "sub"):
+        rand_operand = rand_add_sub_operand
+    else:
+        rand_operand = rand_mul_div_operand
+
+    a = rand_operand(max_digits)
+    b = rand_operand(max_digits)
     if op_key == "add":
         return a, b, a + b
     if op_key == "sub":
-        if b > a:
-            a, b = b, a
+        for _ in range(50):
+            a = rand_add_sub_operand(max_digits)
+            b = rand_add_sub_operand(max_digits)
+            if a > b:
+                return a, b, a - b
+        a, b = max(a, b) + 1, min(a, b)
         return a, b, a - b
     if op_key == "mul":
         return a, b, a * b
