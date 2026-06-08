@@ -127,6 +127,31 @@ def rand_by_max_digits(max_digits: int) -> int:
     return random.randint(10 ** (digits - 1), 10**digits - 1)
 
 
+def _digit_count(n: int) -> int:
+    return len(str(abs(n)))
+
+
+def _rand_division_operands(max_digits: int) -> tuple[int, int, int]:
+    """
+    나눗셈용 a ÷ b = answer 생성.
+    피제수(a), 제수(b), 몫(answer) 모두 max_digits 자리 이하가 되도록 제한합니다.
+  (기존 b×answer 방식은 곱이 커져 4자리 피제수가 나올 수 있었음)
+    """
+    cap = 10**max_digits - 1
+    for _ in range(200):
+        b = rand_by_max_digits(max_digits)
+        max_answer = cap // b
+        if max_answer < 1:
+            continue
+        answer = random.randint(1, max_answer)
+        a = b * answer
+        if _digit_count(a) <= max_digits and _digit_count(b) <= max_digits:
+            return a, b, answer
+    b = random.randint(2, min(9, cap))
+    answer = random.randint(1, max(1, cap // b))
+    return b * answer, b, answer
+
+
 def generate_arithmetic(op_key: str, symbol: str, max_digits: int) -> dict:
     """단순 연산 문제 1개 생성 (피연산자 + 정답)."""
     a = rand_by_max_digits(max_digits)
@@ -141,10 +166,7 @@ def generate_arithmetic(op_key: str, symbol: str, max_digits: int) -> dict:
     elif op_key == "mul":
         answer = a * b
     elif op_key == "div":
-        # 나누어떨어지도록: a = b × answer
-        b = rand_by_max_digits(max_digits)
-        answer = rand_by_max_digits(max_digits)
-        a = b * answer
+        a, b, answer = _rand_division_operands(max_digits)
     else:
         answer = a + b
 
@@ -199,9 +221,7 @@ def _operands_for_word(op_key: str, max_digits: int) -> tuple[int, int, int]:
     if op_key == "mul":
         return a, b, a * b
     if op_key == "div":
-        b = rand_by_max_digits(max_digits)
-        answer = rand_by_max_digits(max_digits)
-        return b * answer, b, answer
+        return _rand_division_operands(max_digits)
     return a, b, a + b
 
 
