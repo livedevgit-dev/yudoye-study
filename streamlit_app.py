@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import random
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 import streamlit as st
@@ -28,7 +29,14 @@ import streamlit.components.v1 as components
 # ─── 상수 ────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 WORD_TEMPLATES_FILE = BASE_DIR / "data" / "word_templates.json"
-WORKSHEET_COUNT = 20
+
+# 연산별 학습지 기본값 (단순 연산 / 서술식 개수, 최대 자릿수) — 합계 20문제
+DEFAULT_WORKSHEET_SPECS: dict[str, dict[str, int]] = {
+    "add": {"arithmetic": 3, "word": 2, "max_digits": 4},
+    "sub": {"arithmetic": 3, "word": 2, "max_digits": 3},
+    "mul": {"arithmetic": 2, "word": 2, "max_digits": 2},
+    "div": {"arithmetic": 2, "word": 2, "max_digits": 2},
+}
 
 # 서술식 문장에 채워 넣을 이름·물건 후보
 NAMES = ["유나", "도윤", "예나", "민수", "지우", "서연", "하준"]
@@ -41,6 +49,23 @@ OPERATIONS = {
     "곱셈 (×)": {"key": "mul", "symbol": "×", "json_op": "*"},
     "나눗셈 (÷)": {"key": "div", "symbol": "÷", "json_op": "/"},
 }
+
+OP_LABELS = list(OPERATIONS.keys())
+
+
+@dataclass
+class OpWorksheetSpec:
+    """연산 하나에 대한 학습지 출제 조건."""
+
+    op_label: str
+    op: dict
+    arithmetic_count: int
+    word_count: int
+    max_digits: int
+
+    @property
+    def total(self) -> int:
+        return self.arithmetic_count + self.word_count
 
 
 # ─── 한글 조사 처리 ──────────────────────────────────────────────────────────
@@ -196,21 +221,44 @@ def make_problem(problem_type: str, op: dict, max_digits: int) -> dict:
     return generate_arithmetic(op["key"], op["symbol"], max_digits)
 
 
-def make_worksheet_problems(op: dict, max_digits: int, count: int = WORKSHEET_COUNT) -> list[dict]:
-    """
-    학습지용 문제 목록 생성.
-    단순 연산과 서술식을 절반씩 만든 뒤 섞어서 한 장에 함께 나오게 합니다.
-    """
-    half = count // 2
+def make_worksheet_problems(specs: list[OpWorksheetSpec]) -> list[dict]:
+    """연산별 개수·자릿수 설정에 따라 학습지 문제 목록을 생성합니다."""
     problems: list[dict] = []
-    for _ in range(half):
-        problems.append(make_problem("단순 연산", op, max_digits))
-    for _ in range(count - half):
-        problems.append(make_problem("서술식", op, max_digits))
+    for spec in specs:
+        if spec.total == 0:
+            continue
+        for _ in range(spec.arithmetic_count):
+            problem = generate_arithmetic(spec.op["key"], spec.op["symbol"], spec.max_digits)
+            problem["op_label"] = spec.op_label
+            problems.append(problem)
+        for _ in range(spec.word_count):
+            problem = generate_word(
+                spec.op["key"], spec.op["symbol"], spec.op["json_op"], spec.max_digits
+            )
+            problem["op_label"] = spec.op_label
+            problems.append(problem)
     random.shuffle(problems)
     for i, problem in enumerate(problems, start=1):
         problem["number"] = i
     return problems
+
+
+def build_worksheet_summary(specs: list[OpWorksheetSpec]) -> str:
+    """학습지 상단에 표시할 연산별 요약 문자열."""
+    parts: list[str] = []
+    arith_total = word_total = 0
+    for spec in specs:
+        if spec.total == 0:
+            continue
+        short = spec.op_label.split()[0]
+        parts.append(
+            f"{short} {spec.max_digits}자리 "
+            f"(단순 {spec.arithmetic_count}+서술 {spec.word_count})"
+        )
+        arith_total += spec.arithmetic_count
+        word_total += spec.word_count
+    detail = " · ".join(parts) if parts else "설정된 문제 없음"
+    return f"총 {arith_total + word_total}문제 · 단순 연산 {arith_total} · 서술식 {word_total} — {detail}"
 
 
 def _escape_html(text: str) -> str:
@@ -222,8 +270,9 @@ def _escape_html(text: str) -> str:
     )
 
 
-def build_worksheet_html(problems: list[dict], op_label: str, max_digits: int) -> str:
+def build_worksheet_html(problems: list[dict], summary: str) -> str:
     """인쇄용 학습지 HTML (iframe 안에서 window.print() 호출)."""
+    total = len(problems)
     rows = []
     for p in problems:
         if p.get("kind") == "word":
@@ -342,11 +391,11 @@ def build_worksheet_html(problems: list[dict], op_label: str, max_digits: int) -
 <body>
   <div class="toolbar no-print">
     <button class="primary" onclick="window.print()">🖨️ 인쇄하기</button>
-    <span>아래 학습지가 인쇄됩니다. (20문제)</span>
+    <span>아래 학습지가 인쇄됩니다. ({total}문제)</span>
   </div>
   <div class="worksheet">
     <h1>🧮 유도예 학습 앱 — 사칙연산 학습지</h1>
-    <div class="settings">연산: {_escape_html(op_label)} · 최대 자릿수: {max_digits} · 단순 연산 + 서술식 혼합</div>
+    <div class="settings">{_escape_html(summary)}</div>
     <div class="meta">
       <span>이름:</span>
       <span>날짜:</span>
@@ -366,34 +415,91 @@ def init_state() -> None:
     st.session_state.setdefault("total", 0)
     st.session_state.setdefault("last_feedback", None)
     st.session_state.setdefault("worksheet", None)
+    st.session_state.setdefault("worksheet_summary", "")
+
+
+# ─── 사이드바: 학습지 구성 ───────────────────────────────────────────────────
+def read_worksheet_specs() -> list[OpWorksheetSpec]:
+    """사이드바에서 연산별 단순 연산·서술식 개수와 자릿수를 읽습니다."""
+    specs: list[OpWorksheetSpec] = []
+    for op_label in OP_LABELS:
+        op = OPERATIONS[op_label]
+        key = op["key"]
+        defaults = DEFAULT_WORKSHEET_SPECS[key]
+        with st.expander(op_label, expanded=key == "add"):
+            arithmetic_count = st.number_input(
+                "단순 연산 (계산식)",
+                min_value=0,
+                max_value=30,
+                value=defaults["arithmetic"],
+                step=1,
+                key=f"ws_arith_{key}",
+                help="예: 1234 + 56 = ?",
+            )
+            word_count = st.number_input(
+                "서술식 (문장제)",
+                min_value=0,
+                max_value=30,
+                value=defaults["word"],
+                step=1,
+                key=f"ws_word_{key}",
+            )
+            max_digits = st.select_slider(
+                "최대 자릿수",
+                options=[1, 2, 3, 4],
+                value=defaults["max_digits"],
+                key=f"ws_digits_{key}",
+            )
+        specs.append(
+            OpWorksheetSpec(
+                op_label=op_label,
+                op=op,
+                arithmetic_count=int(arithmetic_count),
+                word_count=int(word_count),
+                max_digits=int(max_digits),
+            )
+        )
+    return specs
 
 
 # ─── 화면: 학습지 출력 ───────────────────────────────────────────────────────
-def render_worksheet_mode(op_label: str, op: dict, max_digits: int) -> None:
-    st.subheader("📄 학습지 출력 (20문제)")
+def render_worksheet_mode(specs: list[OpWorksheetSpec]) -> None:
+    total = sum(s.total for s in specs)
+    summary = build_worksheet_summary(specs)
+
+    st.subheader(f"📄 학습지 출력 ({total}문제)")
     st.caption(
-        f"단순 연산 {WORKSHEET_COUNT // 2}문제 + 서술식 {WORKSHEET_COUNT // 2}문제가 "
-        "한 장에 섞여 나옵니다. 인쇄해서 풀게 하세요."
+        "사이드바에서 연산마다 단순 연산·서술식 개수와 자릿수를 따로 정한 뒤 "
+        "학습지를 만들고 인쇄하세요."
     )
+
+    if total == 0:
+        st.warning("출제할 문제가 없습니다. 사이드바에서 연산별 문제 수를 1개 이상 설정해 주세요.")
+        return
 
     col_a, col_b = st.columns(2)
     with col_a:
-        if st.button("📝 20문제 학습지 만들기", type="primary", use_container_width=True):
-            st.session_state.worksheet = make_worksheet_problems(op, max_digits)
+        if st.button(f"📝 {total}문제 학습지 만들기", type="primary", use_container_width=True):
+            st.session_state.worksheet = make_worksheet_problems(specs)
+            st.session_state.worksheet_summary = summary
             st.rerun()
     with col_b:
         if st.session_state.worksheet and st.button(
             "🔄 다른 문제로 다시 만들기", use_container_width=True
         ):
-            st.session_state.worksheet = make_worksheet_problems(op, max_digits)
+            st.session_state.worksheet = make_worksheet_problems(specs)
+            st.session_state.worksheet_summary = summary
             st.rerun()
 
     if st.session_state.worksheet is None:
-        st.info("왼쪽 **20문제 학습지 만들기** 버튼을 누르면 아래에 학습지가 나타납니다.")
+        st.info(f"**{total}문제 학습지 만들기** 버튼을 누르면 아래에 학습지가 나타납니다.")
+        st.markdown(f"현재 설정: {summary}")
         return
 
-    html = build_worksheet_html(st.session_state.worksheet, op_label, max_digits)
-    components.html(html, height=1100, scrolling=True)
+    display_summary = st.session_state.get("worksheet_summary", summary)
+    html = build_worksheet_html(st.session_state.worksheet, display_summary)
+    height = min(500 + 48 * len(st.session_state.worksheet), 2200)
+    components.html(html, height=height, scrolling=True)
 
 
 # ─── 화면: 화면 연습 ─────────────────────────────────────────────────────────
@@ -460,13 +566,23 @@ def main() -> None:
         st.header("사용 방법")
         mode = st.radio("모드", ["학습지 출력", "화면 연습"], index=0)
         st.markdown("---")
-        st.header("문제 설정")
-        op_label = st.selectbox("연산", list(OPERATIONS.keys()), index=0)
-        max_digits = st.select_slider("최대 자릿수", options=[1, 2, 3, 4], value=1)
 
+        worksheet_specs: list[OpWorksheetSpec] = []
         problem_type = "단순 연산"
-        if mode == "화면 연습":
+        op_label = OP_LABELS[0]
+        max_digits = 1
+
+        if mode == "학습지 출력":
+            st.header("학습지 구성")
+            st.caption("연산마다 단순 연산·서술식 개수와 자릿수를 따로 지정합니다.")
+            worksheet_specs = read_worksheet_specs()
+            ws_total = sum(s.total for s in worksheet_specs)
+            st.markdown(f"**총 {ws_total}문제**")
+        else:
+            st.header("문제 설정")
             problem_type = st.radio("문제 형태", ["단순 연산", "서술식"], index=0)
+            op_label = st.selectbox("연산", OP_LABELS, index=0)
+            max_digits = st.select_slider("최대 자릿수", options=[1, 2, 3, 4], value=1)
             st.markdown("---")
             if st.button("점수 초기화", use_container_width=True):
                 st.session_state.correct = 0
@@ -478,7 +594,7 @@ def main() -> None:
     op = OPERATIONS[op_label]
 
     if mode == "학습지 출력":
-        render_worksheet_mode(op_label, op, max_digits)
+        render_worksheet_mode(worksheet_specs)
     else:
         render_practice_mode(problem_type, op, max_digits)
 
