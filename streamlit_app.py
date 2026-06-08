@@ -23,10 +23,12 @@ import re
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ─── 상수 ────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 WORD_TEMPLATES_FILE = BASE_DIR / "data" / "word_templates.json"
+WORKSHEET_COUNT = 20
 
 # 서술식 문장에 채워 넣을 이름·물건 후보
 NAMES = ["유나", "도윤", "예나", "민수", "지우", "서연", "하준"]
@@ -194,38 +196,208 @@ def make_problem(problem_type: str, op: dict, max_digits: int) -> dict:
     return generate_arithmetic(op["key"], op["symbol"], max_digits)
 
 
+def make_worksheet_problems(op: dict, max_digits: int, count: int = WORKSHEET_COUNT) -> list[dict]:
+    """
+    학습지용 문제 목록 생성.
+    단순 연산과 서술식을 절반씩 만든 뒤 섞어서 한 장에 함께 나오게 합니다.
+    """
+    half = count // 2
+    problems: list[dict] = []
+    for _ in range(half):
+        problems.append(make_problem("단순 연산", op, max_digits))
+    for _ in range(count - half):
+        problems.append(make_problem("서술식", op, max_digits))
+    random.shuffle(problems)
+    for i, problem in enumerate(problems, start=1):
+        problem["number"] = i
+    return problems
+
+
+def _escape_html(text: str) -> str:
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
+def build_worksheet_html(problems: list[dict], op_label: str, max_digits: int) -> str:
+    """인쇄용 학습지 HTML (iframe 안에서 window.print() 호출)."""
+    rows = []
+    for p in problems:
+        if p.get("kind") == "word":
+            body = _escape_html(p["text"])
+            rows.append(
+                f'<div class="problem word">'
+                f'<span class="num">{p["number"]}.</span>'
+                f'<span class="text">{body}</span>'
+                f'<div class="answer-line"></div>'
+                f"</div>"
+            )
+        else:
+            body = _escape_html(p["text"])
+            rows.append(
+                f'<div class="problem arithmetic">'
+                f'<span class="num">{p["number"]}.</span>'
+                f'<span class="text">{body}</span>'
+                f"</div>"
+            )
+
+    problems_html = "\n".join(rows)
+    return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  * {{ box-sizing: border-box; }}
+  body {{
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    color: #111;
+    margin: 0;
+    padding: 16px 20px 24px;
+    background: #fff;
+  }}
+  .toolbar {{
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }}
+  .toolbar button {{
+    font-size: 15px;
+    padding: 8px 18px;
+    cursor: pointer;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #f5f5f5;
+  }}
+  .toolbar button.primary {{
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+  }}
+  .worksheet {{
+    border: 2px solid #222;
+    padding: 20px 24px 28px;
+  }}
+  h1 {{
+    margin: 0 0 6px;
+    font-size: 22px;
+    text-align: center;
+  }}
+  .meta {{
+    display: flex;
+    justify-content: space-between;
+    margin: 14px 0 18px;
+    font-size: 15px;
+  }}
+  .meta span {{
+    display: inline-block;
+    min-width: 140px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 2px;
+  }}
+  .settings {{
+    text-align: center;
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 16px;
+  }}
+  .problems {{
+    column-count: 2;
+    column-gap: 28px;
+  }}
+  .problem {{
+    break-inside: avoid;
+    margin-bottom: 18px;
+    font-size: 15px;
+    line-height: 1.55;
+  }}
+  .problem .num {{
+    font-weight: 700;
+    margin-right: 4px;
+  }}
+  .problem.word .text {{
+    display: inline;
+  }}
+  .problem.word .answer-line {{
+    margin-top: 6px;
+    margin-left: 22px;
+    border-bottom: 1px solid #333;
+    height: 22px;
+    width: 90px;
+  }}
+  .problem.arithmetic .text {{
+    font-size: 17px;
+    font-weight: 600;
+  }}
+  @media print {{
+  .toolbar {{ display: none !important; }}
+  body {{ padding: 0; }}
+  .worksheet {{ border: none; padding: 0; }}
+  }}
+</style>
+</head>
+<body>
+  <div class="toolbar no-print">
+    <button class="primary" onclick="window.print()">🖨️ 인쇄하기</button>
+    <span>아래 학습지가 인쇄됩니다. (20문제)</span>
+  </div>
+  <div class="worksheet">
+    <h1>🧮 유도예 학습 앱 — 사칙연산 학습지</h1>
+    <div class="settings">연산: {_escape_html(op_label)} · 최대 자릿수: {max_digits} · 단순 연산 + 서술식 혼합</div>
+    <div class="meta">
+      <span>이름:</span>
+      <span>날짜:</span>
+    </div>
+    <div class="problems">
+      {problems_html}
+    </div>
+  </div>
+</body>
+</html>"""
+
+
 # ─── 세션 상태 초기화 ────────────────────────────────────────────────────────
 def init_state() -> None:
     st.session_state.setdefault("problem", None)
     st.session_state.setdefault("correct", 0)
     st.session_state.setdefault("total", 0)
     st.session_state.setdefault("last_feedback", None)
+    st.session_state.setdefault("worksheet", None)
 
 
-# ─── 화면 ────────────────────────────────────────────────────────────────────
-def main() -> None:
-    st.set_page_config(page_title="유도예 학습 앱", page_icon="🧮")
-    init_state()
+# ─── 화면: 학습지 출력 ───────────────────────────────────────────────────────
+def render_worksheet_mode(op_label: str, op: dict, max_digits: int) -> None:
+    st.subheader("📄 학습지 출력 (20문제)")
+    st.caption(
+        f"단순 연산 {WORKSHEET_COUNT // 2}문제 + 서술식 {WORKSHEET_COUNT // 2}문제가 "
+        "한 장에 섞여 나옵니다. 인쇄해서 풀게 하세요."
+    )
 
-    st.title("🧮 유도예 학습 앱")
-    st.caption("초등 사칙연산 연습 · 문제 출제 전용 (점수는 이번 접속에서만 기록)")
-
-    # 사이드바: 문제 설정
-    with st.sidebar:
-        st.header("문제 설정")
-        problem_type = st.radio("문제 형태", ["단순 연산", "서술식"], index=0)
-        op_label = st.selectbox("연산", list(OPERATIONS.keys()), index=0)
-        max_digits = st.select_slider("최대 자릿수", options=[1, 2, 3, 4], value=1)
-        st.markdown("---")
-        if st.button("점수 초기화", use_container_width=True):
-            st.session_state.correct = 0
-            st.session_state.total = 0
-            st.session_state.problem = None
-            st.session_state.last_feedback = None
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if st.button("📝 20문제 학습지 만들기", type="primary", use_container_width=True):
+            st.session_state.worksheet = make_worksheet_problems(op, max_digits)
+            st.rerun()
+    with col_b:
+        if st.session_state.worksheet and st.button(
+            "🔄 다른 문제로 다시 만들기", use_container_width=True
+        ):
+            st.session_state.worksheet = make_worksheet_problems(op, max_digits)
             st.rerun()
 
-    op = OPERATIONS[op_label]
+    if st.session_state.worksheet is None:
+        st.info("왼쪽 **20문제 학습지 만들기** 버튼을 누르면 아래에 학습지가 나타납니다.")
+        return
 
+    html = build_worksheet_html(st.session_state.worksheet, op_label, max_digits)
+    components.html(html, height=1100, scrolling=True)
+
+
+# ─── 화면: 화면 연습 ─────────────────────────────────────────────────────────
+def render_practice_mode(problem_type: str, op: dict, max_digits: int) -> None:
     # 점수 표시
     col1, col2 = st.columns(2)
     col1.metric("맞힌 문제", st.session_state.correct)
@@ -233,14 +405,12 @@ def main() -> None:
 
     st.markdown("---")
 
-    # 첫 진입 시 문제 자동 생성
     if st.session_state.problem is None:
         st.session_state.problem = make_problem(problem_type, op, max_digits)
         st.session_state.last_feedback = None
 
     problem = st.session_state.problem
 
-    # 문제 표시
     if problem.get("kind") == "word":
         st.subheader("📖 문장을 읽고 숫자로 답하세요")
         st.markdown(f"### {problem['text']}")
@@ -248,7 +418,6 @@ def main() -> None:
         st.subheader("🔢 계산해서 숫자로 답하세요")
         st.markdown(f"## {problem['text']}")
 
-    # 답 입력 + 채점 (주관식만)
     with st.form("answer_form", clear_on_submit=False):
         user_answer = st.number_input(
             "답 (숫자만 입력)", step=1, value=0, format="%d"
@@ -266,7 +435,6 @@ def main() -> None:
                 f"아쉬워요. 정답은 {problem['answer']} 이에요.",
             )
 
-    # 피드백
     if st.session_state.last_feedback:
         kind, msg = st.session_state.last_feedback
         if kind == "ok":
@@ -274,11 +442,45 @@ def main() -> None:
         else:
             st.error(msg)
 
-    # 다음 문제
     if st.button("다음 문제 ▶", type="primary", use_container_width=True):
         st.session_state.problem = make_problem(problem_type, op, max_digits)
         st.session_state.last_feedback = None
         st.rerun()
+
+
+# ─── 화면 ────────────────────────────────────────────────────────────────────
+def main() -> None:
+    st.set_page_config(page_title="유도예 학습 앱", page_icon="🧮")
+    init_state()
+
+    st.title("🧮 유도예 학습 앱")
+    st.caption("초등 사칙연산 연습 · 화면 풀이 또는 학습지 인쇄")
+
+    with st.sidebar:
+        st.header("사용 방법")
+        mode = st.radio("모드", ["학습지 출력", "화면 연습"], index=0)
+        st.markdown("---")
+        st.header("문제 설정")
+        op_label = st.selectbox("연산", list(OPERATIONS.keys()), index=0)
+        max_digits = st.select_slider("최대 자릿수", options=[1, 2, 3, 4], value=1)
+
+        problem_type = "단순 연산"
+        if mode == "화면 연습":
+            problem_type = st.radio("문제 형태", ["단순 연산", "서술식"], index=0)
+            st.markdown("---")
+            if st.button("점수 초기화", use_container_width=True):
+                st.session_state.correct = 0
+                st.session_state.total = 0
+                st.session_state.problem = None
+                st.session_state.last_feedback = None
+                st.rerun()
+
+    op = OPERATIONS[op_label]
+
+    if mode == "학습지 출력":
+        render_worksheet_mode(op_label, op, max_digits)
+    else:
+        render_practice_mode(problem_type, op, max_digits)
 
 
 if __name__ == "__main__":
