@@ -1,0 +1,285 @@
+"""
+streamlit_app.py — 유도예 학습 앱 (Streamlit 단순 버전)
+─────────────────────────────────────────────────────────────────────────────
+목적:
+  초등학생용 사칙연산 문제를 '출제 + 채점'만 하는 가벼운 단일 파일 앱입니다.
+  - 저장(이력/DB) 없음: 점수는 현재 접속 세션 동안만 메모리에 유지됩니다.
+  - 객관식 없음: 주관식(숫자 입력)만 사용합니다.
+  - 단순 연산 / 서술식(문장제) 두 가지 문제 형태를 지원합니다.
+
+실행:
+  pip install -r requirements.txt
+  streamlit run streamlit_app.py
+
+배포(Streamlit Community Cloud):
+  GitHub에 push → share.streamlit.io 에서 저장소 연결 → main 파일을 streamlit_app.py 로 지정
+"""
+
+from __future__ import annotations
+
+import json
+import random
+import re
+from pathlib import Path
+
+import streamlit as st
+
+# ─── 상수 ────────────────────────────────────────────────────────────────────
+BASE_DIR = Path(__file__).resolve().parent
+WORD_TEMPLATES_FILE = BASE_DIR / "data" / "word_templates.json"
+
+# 서술식 문장에 채워 넣을 이름·물건 후보
+NAMES = ["유나", "도윤", "예나", "민수", "지우", "서연", "하준"]
+ITEMS = ["사과", "연필", "공", "스티커", "구슬", "책", "젤리", "우유", "쿠키"]
+
+# UI 연산 키 ↔ 표시 기호 ↔ JSON operator 기호
+OPERATIONS = {
+    "덧셈 (＋)": {"key": "add", "symbol": "+", "json_op": "+"},
+    "뺄셈 (－)": {"key": "sub", "symbol": "-", "json_op": "-"},
+    "곱셈 (×)": {"key": "mul", "symbol": "×", "json_op": "*"},
+    "나눗셈 (÷)": {"key": "div", "symbol": "÷", "json_op": "/"},
+}
+
+
+# ─── 한글 조사 처리 ──────────────────────────────────────────────────────────
+def has_jongseong(ch: str) -> bool:
+    """
+    한글 음절 1글자에 받침(종성)이 있는지 판별.
+    유니코드 한글은 (초성×21 + 중성)×28 + 종성 + 0xAC00 구조이므로,
+    (코드 - 0xAC00) % 28 == 0 이면 종성이 없는 글자(받침 없음)입니다.
+    """
+    if not ch:
+        return False
+    code = ord(ch[-1])
+    if code < 0xAC00 or code > 0xD7A3:
+        return False
+    return (code - 0xAC00) % 28 != 0
+
+
+def resolve_josa(text: str) -> str:
+    """
+    "단어(이)가" 형태의 조사 마커를 앞 단어 받침에 맞게 변환.
+    괄호 안 = 받침 있을 때, 괄호 뒤 = 받침 없을 때.
+    예) 사과(을)를 → 사과를 / 연필(을)를 → 연필을
+    """
+    patterns = [
+        (r"([가-힣]+)\(이\)가", ("이", "가")),
+        (r"([가-힣]+)\(은\)는", ("은", "는")),
+        (r"([가-힣]+)\(을\)를", ("을", "를")),
+        (r"([가-힣]+)\(와\)과", ("과", "와")),  # 받침O→과, 받침X→와
+    ]
+    result = text
+    for pattern, (with_j, without_j) in patterns:
+        def repl(m: re.Match) -> str:
+            word = m.group(1)
+            return word + (with_j if has_jongseong(word) else without_j)
+
+        result = re.sub(pattern, repl, result)
+    return result
+
+
+# ─── 데이터 로드 ─────────────────────────────────────────────────────────────
+@st.cache_data
+def load_word_templates() -> list[dict]:
+    """서술식 템플릿 JSON을 읽어 캐시합니다(파일은 한 번만 읽음)."""
+    if not WORD_TEMPLATES_FILE.exists():
+        return []
+    with WORD_TEMPLATES_FILE.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+# ─── 난수·문제 생성 ──────────────────────────────────────────────────────────
+def rand_by_max_digits(max_digits: int) -> int:
+    """
+    1 ~ max_digits 자리 중 하나를 무작위로 골라 그 범위의 양의 정수를 반환.
+    예) 최대 2자리 → 1~9 또는 10~99 중에서 나옴 (자릿수 혼합 출제).
+    """
+    digits = random.randint(1, max_digits)
+    if digits == 1:
+        return random.randint(1, 9)
+    return random.randint(10 ** (digits - 1), 10**digits - 1)
+
+
+def generate_arithmetic(op_key: str, symbol: str, max_digits: int) -> dict:
+    """단순 연산 문제 1개 생성 (피연산자 + 정답)."""
+    a = rand_by_max_digits(max_digits)
+    b = rand_by_max_digits(max_digits)
+
+    if op_key == "add":
+        answer = a + b
+    elif op_key == "sub":
+        if b > a:
+            a, b = b, a  # 음수 방지: 큰 수 - 작은 수
+        answer = a - b
+    elif op_key == "mul":
+        answer = a * b
+    elif op_key == "div":
+        # 나누어떨어지도록: a = b × answer
+        b = rand_by_max_digits(max_digits)
+        answer = rand_by_max_digits(max_digits)
+        a = b * answer
+    else:
+        answer = a + b
+
+    return {
+        "kind": "arithmetic",
+        "text": f"{a} {symbol} {b} = ?",
+        "answer": answer,
+    }
+
+
+def generate_word(op_key: str, symbol: str, json_op: str, max_digits: int) -> dict:
+    """서술식 문제 1개 생성. 연산 결과를 템플릿에 끼워 넣고 조사를 정리."""
+    templates = [t for t in load_word_templates() if t.get("operator") == json_op]
+    if not templates:
+        # 해당 연산 템플릿이 없으면 단순 연산으로 대체
+        return generate_arithmetic(op_key, symbol, max_digits)
+
+    a, b, answer = _operands_for_word(op_key, max_digits)
+    tpl = random.choice(templates)
+    name1, name2 = _pick_two_names()
+    item = random.choice(ITEMS)
+
+    text = (
+        tpl["template_text"]
+        .replace("{name1}", name1)
+        .replace("{name2}", name2)
+        .replace("{name}", name1)
+        .replace("{item}", item)
+        .replace("{a}", str(a))
+        .replace("{b}", str(b))
+    )
+    text = resolve_josa(text)
+
+    return {
+        "kind": "word",
+        "text": text,
+        "answer": answer,
+        "template_id": tpl.get("template_id"),
+    }
+
+
+def _operands_for_word(op_key: str, max_digits: int) -> tuple[int, int, int]:
+    """서술식용 a, b, 정답 생성 (나눗셈은 나누어떨어지게)."""
+    a = rand_by_max_digits(max_digits)
+    b = rand_by_max_digits(max_digits)
+    if op_key == "add":
+        return a, b, a + b
+    if op_key == "sub":
+        if b > a:
+            a, b = b, a
+        return a, b, a - b
+    if op_key == "mul":
+        return a, b, a * b
+    if op_key == "div":
+        b = rand_by_max_digits(max_digits)
+        answer = rand_by_max_digits(max_digits)
+        return b * answer, b, answer
+    return a, b, a + b
+
+
+def _pick_two_names() -> tuple[str, str]:
+    """서로 다른 두 이름 선택."""
+    name1 = random.choice(NAMES)
+    name2 = random.choice(NAMES)
+    while name2 == name1 and len(NAMES) > 1:
+        name2 = random.choice(NAMES)
+    return name1, name2
+
+
+def make_problem(problem_type: str, op: dict, max_digits: int) -> dict:
+    """설정에 맞는 문제 1개 생성."""
+    if problem_type == "서술식":
+        return generate_word(op["key"], op["symbol"], op["json_op"], max_digits)
+    return generate_arithmetic(op["key"], op["symbol"], max_digits)
+
+
+# ─── 세션 상태 초기화 ────────────────────────────────────────────────────────
+def init_state() -> None:
+    st.session_state.setdefault("problem", None)
+    st.session_state.setdefault("correct", 0)
+    st.session_state.setdefault("total", 0)
+    st.session_state.setdefault("last_feedback", None)
+
+
+# ─── 화면 ────────────────────────────────────────────────────────────────────
+def main() -> None:
+    st.set_page_config(page_title="유도예 학습 앱", page_icon="🧮")
+    init_state()
+
+    st.title("🧮 유도예 학습 앱")
+    st.caption("초등 사칙연산 연습 · 문제 출제 전용 (점수는 이번 접속에서만 기록)")
+
+    # 사이드바: 문제 설정
+    with st.sidebar:
+        st.header("문제 설정")
+        problem_type = st.radio("문제 형태", ["단순 연산", "서술식"], index=0)
+        op_label = st.selectbox("연산", list(OPERATIONS.keys()), index=0)
+        max_digits = st.select_slider("최대 자릿수", options=[1, 2, 3, 4], value=1)
+        st.markdown("---")
+        if st.button("점수 초기화", use_container_width=True):
+            st.session_state.correct = 0
+            st.session_state.total = 0
+            st.session_state.problem = None
+            st.session_state.last_feedback = None
+            st.rerun()
+
+    op = OPERATIONS[op_label]
+
+    # 점수 표시
+    col1, col2 = st.columns(2)
+    col1.metric("맞힌 문제", st.session_state.correct)
+    col2.metric("푼 문제", st.session_state.total)
+
+    st.markdown("---")
+
+    # 첫 진입 시 문제 자동 생성
+    if st.session_state.problem is None:
+        st.session_state.problem = make_problem(problem_type, op, max_digits)
+        st.session_state.last_feedback = None
+
+    problem = st.session_state.problem
+
+    # 문제 표시
+    if problem.get("kind") == "word":
+        st.subheader("📖 문장을 읽고 숫자로 답하세요")
+        st.markdown(f"### {problem['text']}")
+    else:
+        st.subheader("🔢 계산해서 숫자로 답하세요")
+        st.markdown(f"## {problem['text']}")
+
+    # 답 입력 + 채점 (주관식만)
+    with st.form("answer_form", clear_on_submit=False):
+        user_answer = st.number_input(
+            "답 (숫자만 입력)", step=1, value=0, format="%d"
+        )
+        submitted = st.form_submit_button("확인", use_container_width=True)
+
+    if submitted:
+        st.session_state.total += 1
+        if int(user_answer) == int(problem["answer"]):
+            st.session_state.correct += 1
+            st.session_state.last_feedback = ("ok", "정답이에요! 잘했어요 🎉")
+        else:
+            st.session_state.last_feedback = (
+                "ng",
+                f"아쉬워요. 정답은 {problem['answer']} 이에요.",
+            )
+
+    # 피드백
+    if st.session_state.last_feedback:
+        kind, msg = st.session_state.last_feedback
+        if kind == "ok":
+            st.success(msg)
+        else:
+            st.error(msg)
+
+    # 다음 문제
+    if st.button("다음 문제 ▶", type="primary", use_container_width=True):
+        st.session_state.problem = make_problem(problem_type, op, max_digits)
+        st.session_state.last_feedback = None
+        st.rerun()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,405 @@
+[
+  {
+    "template_id": "add_01",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {name2}(이)가 {b}개를 더 주었습니다. {name1}(이)가 가진 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_02",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 주웠습니다. 집에 와서 {item}(을)를 {b}개 더 주웠습니다. 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_03",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 샀습니다. 다음에 {item}(을)를 {b}개 더 샀습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_04",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 만들었습니다. {name2}(이)도 {item}(을)를 {b}개 만들었습니다. 두 사람의 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_05",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. 엄마가 {item}(을)를 {b}개 더 사 주었습니다. 이제 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_06",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 세었습니다. {name2}(이)가 {item}(을)를 {b}개 더 가져왔습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_07",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. 친구가 {item}(을)를 {b}개 빌려 주었습니다. {name1}(이)가 가진 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_08",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 먹었습니다. 나중에 {item}(을)를 {b}개 더 먹었습니다. {name1}(이)가 먹은 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_09",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. 생일이라서 {item}(을)를 {b}개 더 받았습니다. 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_10",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 모았습니다. 오늘 {item}(을)를 {b}개 더 모았습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_11",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. 선생님이 {item}(을)를 {b}개 더 나누어 주었습니다. {name1}(이)가 가진 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_12",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 정리했습니다. {name2}(이)가 {item}(을)를 {b}개 더 정리했습니다. 둘이 정리한 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_13",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 그렸습니다. 쉬는 시간에 {item}(을)를 {b}개 더 그렸습니다. 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_14",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {name2}(이)가 자기 {item}(을)를 {b}개 합쳐 주었습니다. 이제 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_15",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 포장했습니다. {name2}(이)도 {item}(을)를 {b}개 포장했습니다. 포장한 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_16",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. 아빠가 {item}(을)를 {b}개 더 가져다주었습니다. 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_17",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 넣었습니다. 그다음 {item}(을)를 {b}개 더 넣었습니다. 들어 있는 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_18",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 적었습니다. {name2}(이)가 {item}(을)를 {b}개 더 적었습니다. 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_19",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. 길에서 {item}(을)를 {b}개 더 발견했습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "add_20",
+    "operator": "+",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 준비했습니다. {name2}(이)가 {item}(을)를 {b}개 더 준비했습니다. 준비한 {item}(은)는 모두 몇 개인가요?"
+  },
+
+  {
+    "template_id": "sub_01",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있었습니다. {item}(을)를 {b}개 친구에게 주었습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_02",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있었습니다. {item}(을)를 {b}개 먹었습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_03",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {name2}(이)에게 {item}(을)를 {b}개 빌려 주었습니다. {name1}(이)에게 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_04",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 모았습니다. 그중 {item}(을)를 {b}개 잃어버렸습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_05",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {item}(을)를 {b}개 쓰고 버렸습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_06",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 준비했습니다. 친구들에게 {item}(을)를 {b}개 나누어 주었습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_07",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있었습니다. {item}(을)를 {b}개 동생에게 주었습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_08",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 세었습니다. {item}(을)를 {b}개 꺼냈습니다. 남아 있는 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_09",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. 집에서 {item}(을)를 {b}개 두고 왔습니다. 지금 가진 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_10",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 만들었습니다. 그중 {item}(을)를 {b}개 친구에게 주었습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_11",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {item}(을)를 {b}개 정리해서 상자에 넣었습니다. 손에 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_12",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 샀습니다. 집에 와서 {item}(을)를 {b}개 먹었습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_13",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있었습니다. {name2}(이)가 {item}(을)를 {b}개 가져갔습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_14",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 모아 두었습니다. 그중 {item}(을)를 {b}개 선물했습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_15",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {item}(을)를 {b}개 친구와 함께 만들기 놀이에 썼습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_16",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있었습니다. {item}(을)를 {b}개 물에 씻어서 말리고 있습니다. 아직 남아 있는 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_17",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {item}(을)를 {b}개 친구에게 빌려 주었습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_18",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 만들었습니다. 그중 {item}(을)를 {b}개 망가뜨렸습니다. 쓸 수 있는 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_19",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {item}(을)를 {b}개 친구에게 나누어 주었습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "sub_20",
+    "operator": "-",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있었습니다. 놀다가 {item}(을)를 {b}개 떨어뜨렸습니다. 남은 {item}(은)는 몇 개인가요?"
+  },
+
+  {
+    "template_id": "mul_01",
+    "operator": "*",
+    "template_text": "한 상자에 {item}(이)가 {a}개씩 들어 있습니다. 이런 상자가 {b}상자 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_02",
+    "operator": "*",
+    "template_text": "{name1}(이)가 한 줄에 {item}(을)를 {a}개씩 놓았습니다. 이런 줄이 {b}줄 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_03",
+    "operator": "*",
+    "template_text": "한 봉지에 {item}(이)가 {a}개씩 있습니다. 봉지가 {b}개 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_04",
+    "operator": "*",
+    "template_text": "한 접시에 {item}(을)를 {a}개씩 담았습니다. 접시가 {b}개 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_05",
+    "operator": "*",
+    "template_text": "{name1}(이)가 하루에 {item}(을)를 {a}개씩 모았습니다. 이런 날이 {b}일입니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_06",
+    "operator": "*",
+    "template_text": "한 장에 {item}(을)를 {a}개씩 붙였습니다. 이런 장이 {b}장 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_07",
+    "operator": "*",
+    "template_text": "한 칸에 {item}(을)를 {a}개씩 넣었습니다. 이런 칸이 {b}칸 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_08",
+    "operator": "*",
+    "template_text": "{name2}(이)가 한 번에 {item}(을)를 {a}개씩 접었습니다. 이런 번이 {b}번입니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_09",
+    "operator": "*",
+    "template_text": "한 묶음에 {item}(이)가 {a}개씩 있습니다. 이런 묶음이 {b}묶음 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_10",
+    "operator": "*",
+    "template_text": "{name1}(이)가 한 층에 {item}(을)를 {a}개씩 놓았습니다. 이런 층이 {b}층입니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_11",
+    "operator": "*",
+    "template_text": "한 가방에 {item}(을)를 {a}개씩 넣었습니다. 가방이 {b}개 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_12",
+    "operator": "*",
+    "template_text": "한 친구가 {item}(을)를 {a}개씩 가지고 있습니다. 친구가 {b}명 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_13",
+    "operator": "*",
+    "template_text": "한 세트에 {item}(이)가 {a}개씩 들어 있습니다. 세트가 {b}세트 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_14",
+    "operator": "*",
+    "template_text": "{name1}(이)가 한 칸에 {item}(을)를 {a}개씩 그렸습니다. 이런 칸이 {b}칸 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_15",
+    "operator": "*",
+    "template_text": "한 바구니에 {item}(이)가 {a}개씩 있습니다. 바구니가 {b}개 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_16",
+    "operator": "*",
+    "template_text": "{name2}(이)가 한 상자에 {item}(을)를 {a}개씩 담았습니다. 상자가 {b}개입니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_17",
+    "operator": "*",
+    "template_text": "한 칸에 {item}(을)를 {a}개씩 적었습니다. 이런 칸이 {b}칸 있습니다. 적은 {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_18",
+    "operator": "*",
+    "template_text": "한 줄에 {item}(이)가 {a}개씩 있습니다. 줄이 {b}줄 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_19",
+    "operator": "*",
+    "template_text": "{name1}(이)가 한 번에 {item}(을)를 {a}개씩 만들었습니다. 이런 번이 {b}번입니다. {item}(은)는 모두 몇 개인가요?"
+  },
+  {
+    "template_id": "mul_20",
+    "operator": "*",
+    "template_text": "한 판에 {item}(이)가 {a}개씩 있습니다. 판이 {b}판 있습니다. {item}(은)는 모두 몇 개인가요?"
+  },
+
+  {
+    "template_id": "div_01",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {name1}(와)과 {name2}(이)가 똑같이 나누어 가집니다. 한 사람은 {item}(을)를 몇 개씩 가지나요?"
+  },
+  {
+    "template_id": "div_02",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}명이 똑같이 나누어 가집니다. 한 명이 가지는 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "div_03",
+    "operator": "/",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. 친구 {b}명에게 똑같이 나누어 주려고 합니다. 한 명에게 몇 개씩 줄 수 있나요?"
+  },
+  {
+    "template_id": "div_04",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}개의 똑같은 봉지에 똑같이 나누어 담습니다. 한 봉지에는 몇 개씩 들어가나요?"
+  },
+  {
+    "template_id": "div_05",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}개의 접시에 똑같이 나누어 놓습니다. 한 접시에는 몇 개씩 놓이나요?"
+  },
+  {
+    "template_id": "div_06",
+    "operator": "/",
+    "template_text": "{name2}(이)가 {item}(을)를 {a}개 가져왔습니다. {b}명과 똑같이 나누어 가집니다. 한 명은 몇 개씩 가지나요?"
+  },
+  {
+    "template_id": "div_07",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}개의 상자에 똑같이 나누어 넣습니다. 한 상자에는 몇 개씩 들어가나요?"
+  },
+  {
+    "template_id": "div_08",
+    "operator": "/",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 준비했습니다. 친구 {b}명에게 똑같이 나누어 줍니다. 한 명이 받는 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "div_09",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}개의 바구니에 똑같이 나누어 담습니다. 한 바구니에는 몇 개씩 담기나요?"
+  },
+  {
+    "template_id": "div_10",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}줄로 똑같이 나누어 놓습니다. 한 줄에는 몇 개씩 있나요?"
+  },
+  {
+    "template_id": "div_11",
+    "operator": "/",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {b}명과 똑같이 나누어 가지려고 합니다. 한 명은 몇 개씩 가지나요?"
+  },
+  {
+    "template_id": "div_12",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}개의 봉투에 똑같이 나누어 넣습니다. 한 봉투에는 몇 개씩 들어가나요?"
+  },
+  {
+    "template_id": "div_13",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}개의 칸에 똑같이 나누어 넣습니다. 한 칸에는 몇 개씩 들어가나요?"
+  },
+  {
+    "template_id": "div_14",
+    "operator": "/",
+    "template_text": "{name2}(이)가 {item}(을)를 {a}개 가지고 있습니다. {b}명에게 똑같이 나누어 줍니다. 한 명이 받는 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "div_15",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}개의 묶음으로 똑같이 나누어 만듭니다. 한 묶음에는 몇 개씩 있나요?"
+  },
+  {
+    "template_id": "div_16",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}명이 똑같이 나누어 먹습니다. 한 명이 먹는 {item}(은)는 몇 개인가요?"
+  },
+  {
+    "template_id": "div_17",
+    "operator": "/",
+    "template_text": "{name1}(이)가 {item}(을)를 {a}개 가지고 있습니다. {b}개의 작은 상자에 똑같이 나누어 넣습니다. 한 상자에는 몇 개씩 들어가나요?"
+  },
+  {
+    "template_id": "div_18",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}명이 똑같이 나누어 가져가고 싶습니다. 한 명은 {item}(을)를 몇 개씩 가져가나요?"
+  },
+  {
+    "template_id": "div_19",
+    "operator": "/",
+    "template_text": "{item}(이)가 {a}개 있습니다. {b}개의 접시에 똑같이 나누어 담아 간식으로 줍니다. 한 접시에는 몇 개씩 담기나요?"
+  },
+  {
+    "template_id": "div_20",
+    "operator": "/",
+    "template_text": "{name2}(이)가 {item}(을)를 {a}개 준비했습니다. {b}개의 팀에 똑같이 나누어 줍니다. 한 팀이 받는 {item}(은)는 몇 개인가요?"
+  }
+]

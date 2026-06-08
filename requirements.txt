@@ -1,0 +1,2 @@
+# Yudoye Learning App (Streamlit version)
+streamlit>=1.33.0
